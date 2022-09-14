@@ -6,10 +6,11 @@ const app = express();
 // Basic Configuration
 const port = process.env.PORT || 3000;
 
-let bodyParser = require("body-parser");
-let mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 const e = require('express');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+const validUrl = require('valid-url');
 
 app.use(cors());
 
@@ -46,7 +47,6 @@ const createNewUrl = (newUrl, done) => {
 };
 
 let currentCount;
-let regex = /^http:\/\/|^https:\/\//;
 
 // Add new URL to shorten or request existing ones
 app.post("/api/shorturl", (req, res, next) => {
@@ -79,8 +79,8 @@ app.post("/api/shorturl", (req, res, next) => {
             currentCount = data[0].shortUrl;
           }
           
-          // Check if input URL is valid or not
-          if (!regex.test(inputUrl)) {
+          // Check if input URL is valid or not (using valid-url)
+          if (!validUrl.isWebUri(inputUrl)) {
             res.json({error: "invalid url"});
           } else if (dataFullUrl.find(each => each == inputUrl) == undefined) {
             // Add and show new entry in case of new URL
