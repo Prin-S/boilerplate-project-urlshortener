@@ -1,26 +1,21 @@
-require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const app = express();
+const cors = require('cors');
+require('dotenv').config();
 
-// Basic Configuration
 const port = process.env.PORT || 3000;
 
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const e = require('express');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 const validUrl = require('valid-url');
 
 app.use(cors());
-
 app.use('/public', express.static(`${process.cwd()}/public`));
-
+app.use(bodyParser.urlencoded({extended: false}));
 app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
-
-app.use(bodyParser.urlencoded({extended: false}));
 
 let urlSchema = new mongoose.Schema({
   fullUrl: {
@@ -81,16 +76,16 @@ app.post("/api/shorturl", (req, res, next) => {
           
           // Check if input URL is valid or not (using valid-url)
           if (!validUrl.isWebUri(inputUrl)) {
-            res.json({error: "invalid url"});
+            res.json({error: "Invalid URL"});
           } else if (dataFullUrl.find(each => each == inputUrl) == undefined) {
             // Add and show new entry in case of new URL
             currentCount++;
             createNewUrl({fullUrl: inputUrl, shortUrl: currentCount});
-            res.json({"original_url": inputUrl, "short_url": currentCount});
+            res.json({original_url: inputUrl, short_url: currentCount});
           } else {
             // Just show entry in case of existing URL
             let shortCount = dataAll.find(each => each.fullUrl == inputUrl);
-            res.json({"original_url": inputUrl, "short_url": shortCount.shortUrl});
+            res.json({original_url: inputUrl, short_url: shortCount.shortUrl});
           }
         }
       });
